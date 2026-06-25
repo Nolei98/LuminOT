@@ -2,12 +2,9 @@
 
 import Image from "next/image";
 import { useMuted } from "@/lib/audio/useMuted";
-import { useAmbientMusic } from "@/lib/audio/useAmbientMusic";
 
 export function MuteToggle() {
   const { muted, toggleMuted } = useMuted();
-
-  useAmbientMusic("/assets/whisper.mp3", muted);
 
   return (
     <button

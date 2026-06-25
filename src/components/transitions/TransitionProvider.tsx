@@ -1,12 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 import { TransitionContext, type TransitionTarget } from "./transitionContext";
 import { BlackHoleCanvas } from "./BlackHoleCanvas";
 import { useMuted } from "@/lib/audio/useMuted";
 import { playBlackHoleSound } from "@/lib/audio/transitionSounds";
-import { duckAmbientMusic } from "@/lib/audio/useAmbientMusic";
+import { duckAmbientMusic, useAmbientMusic } from "@/lib/audio/useAmbientMusic";
 import { MuteToggle } from "@/components/portal/MuteToggle";
 
 const CLASSIC_SITE_URL = process.env.NEXT_PUBLIC_CLASSIC_SITE_URL ?? "https://luminot.com.br/";
@@ -14,9 +14,12 @@ const FUTURE_ROUTE = "/novo";
 
 export function TransitionProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { muted } = useMuted();
   const [phase, setPhase] = useState<"idle" | "past" | "future">("idle");
   const navigateFnRef = useRef<(() => void) | null>(null);
+
+  useAmbientMusic("/assets/whisper.mp3", muted);
 
   const startTransition = useCallback(
     (target: TransitionTarget) => {
@@ -46,7 +49,7 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
   return (
     <TransitionContext.Provider value={{ startTransition }}>
       {children}
-      <MuteToggle />
+      {pathname !== "/novo" && <MuteToggle />}
 
       {/* Black hole transition — mounts on click, unmounts after navigation */}
       {phase !== "idle" && (
