@@ -5,22 +5,10 @@ import { useEffect } from "react";
 let _audio: HTMLAudioElement | null = null;
 let _started = false;
 
-/** Duck ambient music during transition, then fade back. */
-export function duckAmbientMusic(transitionDuration: number) {
-  const audio = _audio;
-  if (!audio || audio.muted) return;
-  const original = audio.volume;
-  audio.volume = Math.max(0.02, original * 0.12);
-  const restoreAt = transitionDuration * 1000 - 400;
-  setTimeout(() => {
-    if (_audio !== audio) return;
-    const step = () => {
-      if (_audio !== audio) return;
-      audio.volume = Math.min(original, audio.volume + 0.018);
-      if (audio.volume < original) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, Math.max(0, restoreAt));
+export function stopAmbientMusic() {
+  if (!_audio) return;
+  _audio.pause();
+  _started = false;
 }
 
 export function useAmbientMusic(src: string, muted: boolean) {

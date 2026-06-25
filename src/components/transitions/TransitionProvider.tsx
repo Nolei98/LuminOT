@@ -1,12 +1,12 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TransitionContext, type TransitionTarget } from "./transitionContext";
 import { BlackHoleCanvas } from "./BlackHoleCanvas";
 import { useMuted } from "@/lib/audio/useMuted";
 import { playBlackHoleSound } from "@/lib/audio/transitionSounds";
-import { duckAmbientMusic, useAmbientMusic } from "@/lib/audio/useAmbientMusic";
+import { stopAmbientMusic, useAmbientMusic } from "@/lib/audio/useAmbientMusic";
 import { MuteToggle } from "@/components/portal/MuteToggle";
 
 const CLASSIC_SITE_URL = process.env.NEXT_PUBLIC_CLASSIC_SITE_URL ?? "https://luminot.com.br/";
@@ -20,6 +20,11 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
   const navigateFnRef = useRef<(() => void) | null>(null);
 
   useAmbientMusic("/assets/whisper.mp3", muted);
+
+  // Stop music when on /novo
+  useEffect(() => {
+    if (pathname === FUTURE_ROUTE) stopAmbientMusic();
+  }, [pathname]);
 
   const startTransition = useCallback(
     (target: TransitionTarget) => {
@@ -35,10 +40,9 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
 
       if (target === "future") router.prefetch(FUTURE_ROUTE);
 
-      if (!muted) {
-        playBlackHoleSound(target);
-        duckAmbientMusic(1.8);
-      }
+      // Stop music immediately on portal click
+      stopAmbientMusic();
+      if (!muted) playBlackHoleSound(target);
 
       navigateFnRef.current = navigate;
       setPhase(target);
